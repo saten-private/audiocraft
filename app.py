@@ -78,7 +78,7 @@ def predict(model, text, melody, duration, topk, topp, temperature, cfg_coef):
         waveform_video = gr.make_waveform(file.name, bg_color="#21b0fe" , bars_color=('#fe218b', '#fed700'), fg_alpha=1.0, bar_count=75)
         random_string = generate_random_string(12)
         random_string = f"{random_string}.mp4"
-        resize_video(waveform_video, random_string, 1000, 500)
+        resize_video(waveform_video, random_string, 900, 300)
     return random_string
 
 
