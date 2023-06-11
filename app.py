@@ -17,6 +17,20 @@ from audiocraft.data.audio import audio_write
 MODEL = None
 IS_SHARED_SPACE = "musicgen/MusicGen" in os.environ.get('SPACE_ID', '')
 
+def generate_random_string(length):
+    characters = string.ascii_letters + string.digits
+    return ''.join(random.choice(characters) for _ in range(length))
+
+def resize_video(input_path, output_path, target_width, target_height):
+    ffmpeg_cmd = [
+        'ffmpeg',
+        '-y',
+        '-i', input_path,
+        '-vf', f'scale={target_width}:{target_height}',
+        '-c:a', 'copy',
+        output_path
+    ]
+    subprocess.run(ffmpeg_cmd)
 
 def load_model(version):
     print("Loading model", version)
@@ -60,8 +74,11 @@ def predict(model, text, melody, duration, topk, topp, temperature, cfg_coef):
         audio_write(
             file.name, output, MODEL.sample_rate, strategy="loudness",
             loudness_headroom_db=16, loudness_compressor=True, add_suffix=False)
-        waveform_video = gr.make_waveform(file.name)
-    return waveform_video
+        waveform_video = gr.make_waveform(file.name, bg_color="#21b0fe" , bars_color=('#fe218b', '#fed700'), fg_alpha=1.0, bar_count=75)
+        random_string = generate_random_string(12)
+        random_string = f"{random_string}.mp4"
+        resize_video(waveform_video, random_string, 1000, 500)
+    return random_string
 
 
 def ui(**kwargs):
@@ -70,7 +87,7 @@ def ui(**kwargs):
             """
             # MusicGen
             This is your private demo for [MusicGen](https://github.com/facebookresearch/audiocraft), a simple and controllable model for music generation
-            presented at: ["Simple and Controllable Music Generation"](https://huggingface.co/papers/2306.05284)
+            presented at: ["Simple and Controllable Music Generation"](https://arxiv.org/abs/2306.05284)
             """
         )
         if IS_SHARED_SPACE:
