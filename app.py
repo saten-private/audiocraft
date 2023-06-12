@@ -13,6 +13,8 @@ import gradio as gr
 import os
 from audiocraft.models import MusicGen
 from audiocraft.data.audio import audio_write
+from audiocraft.utils.extend import generate_music_segments
+import numpy as np
 
 MODEL = None
 IS_SHARED_SPACE = "musicgen/MusicGen" in os.environ.get('SPACE_ID', '')
@@ -23,44 +25,60 @@ def load_model(version):
     return MusicGen.get_pretrained(version)
 
 
-def predict(model, text, melody, duration, topk, topp, temperature, cfg_coef):
-    global MODEL
+def predict(model, text, melody, duration, dimension, topk, topp, temperature, cfg_coef, background):
+    global MODEL    
+    output_segments = None
     topk = int(topk)
     if MODEL is None or MODEL.name != model:
         MODEL = load_model(model)
 
     if duration > MODEL.lm.cfg.dataset.segment_duration:
-        raise gr.Error("MusicGen currently supports durations of up to 30 seconds!")
+        segment_duration = MODEL.lm.cfg.dataset.segment_duration
+    else:
+        segment_duration = duration
     MODEL.set_generation_params(
         use_sampling=True,
         top_k=topk,
         top_p=topp,
         temperature=temperature,
         cfg_coef=cfg_coef,
-        duration=duration,
+        duration=segment_duration,
     )
 
     if melody:
-        sr, melody = melody[0], torch.from_numpy(melody[1]).to(MODEL.device).float().t().unsqueeze(0)
-        print(melody.shape)
-        if melody.dim() == 2:
-            melody = melody[None]
-        melody = melody[..., :int(sr * MODEL.lm.cfg.dataset.segment_duration)]
-        output = MODEL.generate_with_chroma(
-            descriptions=[text],
-            melody_wavs=melody,
-            melody_sample_rate=sr,
-            progress=False
-        )
+        if duration > MODEL.lm.cfg.dataset.segment_duration:
+            output_segments = generate_music_segments(text, melody, MODEL, duration, MODEL.lm.cfg.dataset.segment_duration)
+        else:
+            # pure original code
+            sr, melody = melody[0], torch.from_numpy(melody[1]).to(MODEL.device).float().t().unsqueeze(0)
+            print(melody.shape)
+            if melody.dim() == 2:
+                melody = melody[None]
+            melody = melody[..., :int(sr * MODEL.lm.cfg.dataset.segment_duration)]
+            output = MODEL.generate_with_chroma(
+                descriptions=[text],
+                melody_wavs=melody,
+                melody_sample_rate=sr,
+                progress=True
+            )
     else:
         output = MODEL.generate(descriptions=[text], progress=False)
 
-    output = output.detach().cpu().float()[0]
+    if output_segments:
+        try:
+            # Combine the output segments into one long audio file
+            output_segments = [segment.detach().cpu().float()[0] for segment in output_segments]
+            output = torch.cat(output_segments, dim=dimension)
+        except Exception as e:
+            print(f"Error combining segments: {e}. Using the first segment only.")
+            output = output_segments[0].detach().cpu().float()[0]
+    else:
+        output = output.detach().cpu().float()[0]
     with NamedTemporaryFile("wb", suffix=".wav", delete=False) as file:
         audio_write(
             file.name, output, MODEL.sample_rate, strategy="loudness",
             loudness_headroom_db=16, loudness_compressor=True, add_suffix=False)
-        waveform_video = gr.make_waveform(file.name)
+        waveform_video = gr.make_waveform(file.name,bg_image=background, bar_count=40)
     return waveform_video
 
 
@@ -89,9 +107,12 @@ def ui(**kwargs):
                 with gr.Row():
                     submit = gr.Button("Submit")
                 with gr.Row():
+                    background= gr.Image(value="./assets/background.png", source="upload", label="Background", shape=(768,512), type="filepath", interactive=True)
+                with gr.Row():
                     model = gr.Radio(["melody", "medium", "small", "large"], label="Model", value="melody", interactive=True)
                 with gr.Row():
-                    duration = gr.Slider(minimum=1, maximum=30, value=10, label="Duration", interactive=True)
+                    duration = gr.Slider(minimum=1, maximum=1000, value=10, label="Duration", interactive=True)
+                    dimension = gr.Slider(minimum=-2, maximum=1, value=1, step=1, label="Dimension", info="determines which direction to add new segements of audio. (0 = stack tracks, 1 = lengthen, -1 = ?)", interactive=True)
                 with gr.Row():
                     topk = gr.Number(label="Top-k", value=250, interactive=True)
                     topp = gr.Number(label="Top-p", value=0, interactive=True)
@@ -99,7 +120,7 @@ def ui(**kwargs):
                     cfg_coef = gr.Number(label="Classifier Free Guidance", value=3.0, interactive=True)
             with gr.Column():
                 output = gr.Video(label="Generated Music")
-        submit.click(predict, inputs=[model, text, melody, duration, topk, topp, temperature, cfg_coef], outputs=[output])
+        submit.click(predict, inputs=[model, text, melody, duration, dimension, topk, topp, temperature, cfg_coef, background], outputs=[output])
         gr.Examples(
             fn=predict,
             examples=[
@@ -194,7 +215,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '--server_port',
         type=int,
-        default=0,
+        default=7859,
         help='Port to run the server listener on',
     )
     parser.add_argument(
