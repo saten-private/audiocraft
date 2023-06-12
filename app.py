@@ -115,7 +115,7 @@ def ui(**kwargs):
                     include_settings = gr.Checkbox(label="Add Settings to background", value=True, interactive=True)
                 with gr.Row():
                     title = gr.Textbox(label="Title", value="MusicGen", interactive=True)
-                    settings_font = gr.Text(label="Settings Font", value="arial.ttf", interactive=True)
+                    settings_font = gr.Text(label="Settings Font", value="./assets/arial.ttf", interactive=True)
                     settings_font_color = gr.ColorPicker(label="Settings Font Color", value="#ffffff", interactive=True)
                 with gr.Row():
                     model = gr.Radio(["melody", "medium", "small", "large"], label="Model", value="melody", interactive=True)
