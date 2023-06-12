@@ -112,7 +112,7 @@ def ui(**kwargs):
                     submit = gr.Button("Submit")
                 with gr.Row():
                     background= gr.Image(value="./assets/background.png", source="upload", label="Background", shape=(900,300), type="filepath", interactive=True)
-                    include_settings = gr.Checkbox(label="Add Settings to background", value=True, interactive=True)
+                    include_settings = gr.Checkbox(label="Add Settings to background", value=False, interactive=True)
                 with gr.Row():
                     title = gr.Textbox(label="Title", value="MusicGen", interactive=True)
                     settings_font = gr.Text(label="Settings Font", value="./assets/arial.ttf", interactive=True)
