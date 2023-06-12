@@ -78,7 +78,7 @@ def predict(model, text, melody, duration, dimension, topk, topp, temperature, c
         audio_write(
             file.name, output, MODEL.sample_rate, strategy="loudness",
             loudness_headroom_db=16, loudness_compressor=True, add_suffix=False)
-        waveform_video = gr.make_waveform(file.name,bg_image=background, bar_count=40)
+        waveform_video = gr.make_waveform(file.name, bg_image=background, bg_color="#21b0fe" , bars_color=('#fe218b', '#fed700'), fg_alpha=1.0, bar_count=75)
     return waveform_video
 
 
