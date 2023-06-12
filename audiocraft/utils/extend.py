@@ -146,7 +146,7 @@ def hex_to_rgba(hex_color):
         rgba = (255,255,0,255)
     return rgba
 
-def add_settings_to_image(title: str = "title", description: str = "", width: int = 900, height: int = 300, background_path: str = "", font: str = "./assets/arial.ttf", font_color: str = "#ffffff"):
+def add_settings_to_image(title: str = "title", description: str = "", width: int = 768, height: int = 512, background_path: str = "", font: str = "./assets/arial.ttf", font_color: str = "#ffffff"):
     # Create a new RGBA image with the specified dimensions
     image = Image.new("RGBA", (width, height), (255, 255, 255, 0))
     # If a background image is specified, open it and paste it onto the image
