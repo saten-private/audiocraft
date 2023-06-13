@@ -164,7 +164,7 @@ def ui_full(launch_kwargs):
             """
             # MusicGen
             This is your private demo for [MusicGen](https://github.com/facebookresearch/audiocraft), a simple and controllable model for music generation
-            presented at: ["Simple and Controllable Music Generation"](https://huggingface.co/papers/2306.05284)
+            presented at: ["Simple and Controllable Music Generation"](https://arxiv.org/abs/2306.05284)
             """
         )
         with gr.Row():
