@@ -310,11 +310,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     UNLOAD_MODEL = args.unload_model
-    ui(
-        username=args.username,
-        password=args.password,
-        inbrowser=args.inbrowser,
-        server_port=args.server_port,
-        share=args.share,
-        listen=args.listen
-    )
+
+    predict("melody", "", "./temp.mp4", 300, 250, 0, 1.0, 3.0, -1)
+    # ui(
+    #     username=args.username,
+    #     password=args.password,
+    #     inbrowser=args.inbrowser,
+    #     server_port=args.server_port,
+    #     share=args.share,
+    #     listen=args.listen
+    # )
