@@ -311,7 +311,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     UNLOAD_MODEL = args.unload_model
 
-    predict("melody", "", None, 300, 250, 0, 1.0, 3.0, -1)
+    predict("melody", "", None, 300, 250, 0, 1.0, 3.0, -1, 5, False, "")
     # ui(
     #     username=args.username,
     #     password=args.password,
