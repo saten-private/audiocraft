@@ -16,6 +16,7 @@ import os
 from audiocraft.models import MusicGen
 from audiocraft.data.audio import audio_write
 import subprocess, random, string
+import openai
 
 MODEL = None
 IS_SHARED_SPACE = "musicgen/MusicGen" in os.environ.get('SPACE_ID', '')
@@ -311,7 +312,17 @@ if __name__ == "__main__":
     args = parser.parse_args()
     UNLOAD_MODEL = args.unload_model
 
-    predict("melody", "", None, 10, 250, 0, 1.0, 3.0, -1, 5, False, None)
+    openai.api_key = args.password
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo",
+                                          messages="You are the best music producer. Create just one random prompt for the best music that will become popular on MusicGen. Please only output the content of one prompt.",
+                                          max_tokens=3000,
+                                          temperature=2.0)
+    result = response.choices[0].message.content.strip()
+
+    with open("temp.txt", mode='w') as f:
+        f.write(result)
+
+    predict("melody", result, None, 10, 250, 0, 1.0, 3.0, -1, 5, False, None)
     # ui(
     #     username=args.username,
     #     password=args.password,
