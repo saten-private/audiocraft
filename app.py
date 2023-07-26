@@ -313,8 +313,10 @@ if __name__ == "__main__":
     UNLOAD_MODEL = args.unload_model
 
     openai.api_key = args.password
+    prompt = "You are the best music producer. Create just one random prompt for the best music that will become popular on MusicGen. Please only output the content of one prompt."
+    messages = [{"role": "system", "content": prompt}]
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo",
-                                          messages="You are the best music producer. Create just one random prompt for the best music that will become popular on MusicGen. Please only output the content of one prompt.",
+                                          messages=messages,
                                           max_tokens=3000,
                                           temperature=2.0)
     result = response.choices[0].message.content.strip()
