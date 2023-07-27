@@ -313,7 +313,9 @@ if __name__ == "__main__":
     UNLOAD_MODEL = args.unload_model
 
     openai.api_key = args.password
-    prompt = "You are the best music producer. Create just one random prompt for the best music that will become popular on MusicGen. Please only output the content of one prompt."
+    prompt = """You are the best music producer. 
+Please create just one random prompt for the best music that will become popular on MusicGen. 
+Please only output the content of one prompt."""
     messages = [{"role": "system", "content": prompt}]
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo",
                                           messages=messages,
@@ -324,7 +326,28 @@ if __name__ == "__main__":
     with open("temp.txt", mode='w') as f:
         f.write(result)
 
-    predict("melody", result, None, 300, 250, 0, 1.0, 3.0, -1, 5, False, None)
+    openai.api_key = args.password
+    prompt = f"""You are the best music producer.
+Please create the best title in Youtube for the following music.
+Output only the content of the title.
+
+# Music Description
+{result}
+
+# Absolute rule
+Output only the content of the title
+"""
+    messages = [{"role": "system", "content": prompt}]
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo",
+                                          messages=messages,
+                                          max_tokens=5,
+                                          temperature=2.0)
+    title = response.choices[0].message.content.strip()
+
+    with open("temp_title.txt", mode='w') as f:
+        f.write(title)
+
+    predict("melody", title, None, 300, 250, 0, 1.0, 3.0, -1, 5, False, None)
     # ui(
     #     username=args.username,
     #     password=args.password,
