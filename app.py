@@ -324,7 +324,7 @@ if __name__ == "__main__":
     with open("temp.txt", mode='w') as f:
         f.write(result)
 
-    predict("melody", result, None, 10, 250, 0, 1.0, 3.0, -1, 5, False, None)
+    predict("melody", result, None, 300, 250, 0, 1.0, 3.0, -1, 5, False, None)
     # ui(
     #     username=args.username,
     #     password=args.password,
